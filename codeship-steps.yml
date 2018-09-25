@@ -5,10 +5,5 @@
     image_name: jvalance/sampledockerfiles
     encrypted_dockercfg_path: dockercfg.encrypted
   - service: anchorescan
-    command: echo "Adding image to Anchore engine"
-    command: anchore-cli image add $ANCHORE_IMAGE_SCAN
-    command: echo "Waiting for image analysis to complete"
-    command: counter=0
-    command: while (! (anchore-cli image get $ANCHORE_IMAGE_SCAN | grep 'Status\:\ analyzed') ) ; do echo -n "." ; sleep 10 ; if [ $counter -eq $ANCHORE_RETRIES ] ; then echo " Timeout waiting for analysis" ; exit 1 ; fi ; counter=$(($counter+1)) ; done
-    command: echo "Analysis complete"
+    command: bash anchore.sh
     encrypted_env_file: env.encrypted
