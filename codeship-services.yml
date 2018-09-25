@@ -1,5 +1,5 @@
-demo:
+anchore:
   add_docker: true
   build:
-    image: myapp
+    image: jvalance/sampledockerfiles
     dockerfile: Dockerfile
