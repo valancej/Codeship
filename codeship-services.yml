@@ -1,5 +1,11 @@
-anchore:
+image_build:
   add_docker: true
   build:
     image: jvalance/sampledockerfiles
     dockerfile: Dockerfile
+
+anchore_scan:
+  add_docker: true
+  image: anchore/engine-cli
+  command: anchore-cli system status
+encrypted_env_file: env.encrypted

@@ -1,4 +1,8 @@
-- service: anchore
-  type: push
-  image_name: jvalance/sampledockerfiles
-  encrypted_dockercfg_path: dockercfg.encrypted
+- type: serial
+  steps:
+  - service: image_build
+    command: echo first step
+  - service: image_build
+    type: push
+    image_name: jvalance/sampledockerfiles
+    encrypted_dockercfg_path: dockercfg.encrypted
