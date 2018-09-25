@@ -1,8 +1,9 @@
 - type: serial
   steps:
-  - service: image_build
-    command: echo first step
-  - service: image_build
+  - service: imagebuild
     type: push
     image_name: jvalance/sampledockerfiles
     encrypted_dockercfg_path: dockercfg.encrypted
+  - service: anchorescan
+    command: anchore-cli system status
+    encrypted_env_file: env.encrypted
