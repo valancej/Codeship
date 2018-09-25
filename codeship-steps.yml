@@ -11,5 +11,4 @@
     command: counter=0
     command: while (! (anchore-cli image get $ANCHORE_IMAGE_SCAN | grep 'Status\:\ analyzed') ) ; do echo -n "." ; sleep 10 ; if [ $counter -eq $ANCHORE_RETRIES ] ; then echo " Timeout waiting for analysis" ; exit 1 ; fi ; counter=$(($counter+1)) ; done
     command: echo "Analysis complete"
-    command: if [ "$ANCHORE_FAIL_ON_POLICY" == "true" ] ; then anchore-cli evaluate check $ANCHORE_IMAGE_SCAN  ; fi
     encrypted_env_file: env.encrypted
