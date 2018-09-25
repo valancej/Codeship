@@ -1,0 +1,3 @@
+- service: demo
+  name: Build docker image
+  command: echo "Building image"
