@@ -1,3 +1,4 @@
 - service: anchore
   type: push
   image_name: jvalance/sampledockerfiles
+  encrypted_dockercfg_path: dockercfg.encrypted
