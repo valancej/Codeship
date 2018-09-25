@@ -5,5 +5,5 @@
     image_name: jvalance/sampledockerfiles
     encrypted_dockercfg_path: dockercfg.encrypted
   - service: anchorescan
-    command: ./anchore.sh
+    command: anchore-cli system status
     encrypted_env_file: env.encrypted
