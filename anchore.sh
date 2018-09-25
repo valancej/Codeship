@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo "Adding image to Anchore engine"
 anchore-cli image add $ANCHORE_IMAGE_SCAN
 echo "Waiting for image analysis to complete"
