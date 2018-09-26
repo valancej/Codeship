@@ -1,6 +1,7 @@
 imagebuild:
   build:
     dockerfile: Dockerfile
+  cached: true
 
 anchorescan:
   image: anchore/engine-cli:latest

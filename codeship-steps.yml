@@ -1,9 +1,9 @@
-- type: serial
-  steps:
-  - service: imagebuild
-    type: push
-    image_name: jvalance/sampledockerfiles
-    encrypted_dockercfg_path: dockercfg.encrypted
-  - service: anchorescan
-    command: bash anchore.sh
-    encrypted_env_file: env.encrypted
+- name: imagestep
+  service: imagebuild
+  type: push
+  image_name: jvalance/sampledockerfiles
+  encrypted_dockercfg_path: dockercfg.encrypted
+- name: anchorestep
+  service: anchorescan
+  command: sh -c 'echo "Adding image to Anchore engine" && anchore-cli image add $ANCHORE_IMAGE_SCAN && echo "Waiting for image analysis to complete"'
+  encrypted_env_file: env.encrypted
