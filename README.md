@@ -25,3 +25,106 @@ Repository contents:
 - Dockerfile
 - dockercfg.encrypted (Docker registry credentials)
 - env.encrypted (Environment variables)
+
+For more info on using encrypted files with Jet CLI: https://documentation.codeship.com/pro/jet-cli/encrypt/
+
+
+Most typically, we advise on having a staging registry and production registry. Meaning, being able to push and pull images freely from the staging/dev registry, while maintaining more control over images being pushed to the production registry. In this example, I am using the same registry for both.
+
+I've added the following environment variables via the `env`file: 
+
+If `ANCHORE_FAIL_ON_POLICY` is set to true, the pipeline will fail, and the image will not be pushed to the registry. 
+
+- `ANCHORE_CLI_URL`
+- `ANCHORE_CLI_USER`
+- `ANCHORE_CLI_PASS`
+- `ANCHORE_CLI_IMAGE`
+- `ANCHORE_RETRIES`
+- `ANCHORE_FAIL_ON_POLICY`
+
+
+The Docker registry has been configured with the `dockercfg` file:
+
+```
+{
+	"auths": {
+		"https://index.docker.io/v1/": {
+			"auth": "anZhbGFuY2U6MjI2MTM3QGtLaw=="
+		}
+	},
+	"HttpHeaders": {
+		"User-Agent": "Docker-Client/17.10.0-ce (linux)"
+	}
+}
+```
+
+## Build Image
+
+In the first step of the pipeline, we build a Docker image from a Dockerfile as definied in our `codeship-steps.yml`:
+
+```
+- name: imagebuildstep
+  service: imagebuild
+  type: push
+  image_name: jvalance/sampledockerfiles
+  encrypted_dockercfg_path: dockercfg.encrypted
+```
+
+and our `codeship-services.yml`:
+
+```
+imagebuild:
+  build:
+    dockerfile: Dockerfile
+  cached: true
+```
+
+## Conduct Anchore Scan
+
+In the second step of the pipeline, we scan the built image with Anchore as definied in our `codeship-steps.yml`:
+
+```
+- name: anchorestep
+  service: anchorescan
+  command: sh -c 'echo "Adding image to Anchore engine" && 
+    anchore-cli image add $ANCHORE_IMAGE_SCAN &&
+    echo "Waiting for image analysis to complete" &&
+    counter=0 && while (! (anchore-cli image get $ANCHORE_IMAGE_SCAN | grep 'Status\:\ analyzed') ) ; do echo -n "." ; sleep 10 ; if [ $counter -eq $ANCHORE_RETRIES ] ; then echo " Timeout waiting for analysis" ; exit 1 ; fi ; counter=$(($counter+1)) ; done &&
+    echo "Analysis complete" &&
+    if [ "$ANCHORE_FAIL_ON_POLICY" == "true" ] ; then anchore-cli evaluate check $ANCHORE_IMAGE_SCAN  ; fi'
+  encrypted_env_file: env.encrypted
+```
+
+and our `codeship-services.yml`:
+
+```
+anchorescan:
+  image: anchore/engine-cli:latest
+  encrypted_env_file: env.encrypted
+```
+
+
+Depending on the output of the policy evaluation, the pipeline may or may not fail. In this case, I have set `ANCHORE_FAIL_ON_POLICY` to true and exposed port 22. This is in violation of a policy rule, so the build will fail during this step.
+
+
+## Push image
+
+In the final step of the pipeline, we push the Docker image to a registry as defined in the `codeship-steps.yml`:
+
+```
+- name: imagepushstep
+  service: imagebuild
+  type: push
+  image_name: jvalance/sampledockerfiles
+  encrypted_dockercfg_path: dockercfg.encrypted
+```
+
+and our `codeship-services.yml`:
+
+```
+anchorescan:
+  image: anchore/engine-cli:latest
+  encrypted_env_file: env.encrypted
+```
+
+As a reminder, we advise having separate Docker registries for images that are being scanned with Anchore, and images that have passed an Anchore scan. For example, a registry for dev/test images, and a registry to certified, trusted, production-ready images. 
